@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:ws="http://jax-ws.dev.java.net/spring/core"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:local-transport="http://jax-ws.dev.java.net/spring/local-transport"
+	xmlns:wss="http://jax-ws.dev.java.net/spring/servlet"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://jax-ws.dev.java.net/spring/core http://jax-ws.dev.java.net/spring/core.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+		http://jax-ws.dev.java.net/spring/local-transport http://jax-ws.dev.java.net/spring/local-transport.xsd
+		http://jax-ws.dev.java.net/spring/servlet http://jax-ws.dev.java.net/spring/servlet.xsd">
+	
+	<context:component-scan base-package="com.fabio.dao,com.fabio.services"></context:component-scan>
+	<!-- PROPERTIES -->
+	<context:property-placeholder location="classpath:application.properties"/>
+	<bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="locations">
+			<list>
+				<value>classpath:query.properties</value>
+				<value>classpath:messaggi.properties</value>
+				<value>classpath:application.properties</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="consultazioneUtenzaDAO" class="com.fabio.dao.ConsultazioneUtenzaDAO">
+		<property name="properties" ref="properties"/>
+		<property name="connessione" ref="connessioneDb"></property>
+	</bean>
+	<bean id="services" class="com.fabio.services.Services">
+		<property name="consultazioneUtenzaDAO" ref="consultazioneUtenzaDAO" />
+	</bean>
+	<bean id="dbConfigurazione" class="com.fabio.connession.DatabaseConfigurazione">
+		<property name="url" value="${url}"/>
+		<property name="driverClassName" value="${driverClassName}"/>
+		<property name="username" value="root"/>
+		<property name="password" value="${password}"/>
+	</bean>
+	<bean id="connessioneDb" class="com.fabio.connession.ConnessioneDB" scope="singleton">
+		<property name="dbConfigurazione" ref="dbConfigurazione"></property>
+	</bean>
+	<!-- SERVIZIO -->
+	<bean id="consultazioneUtenzaService" class="com.fabio.servizi.ConsultazioneUtenzaService">
+		<property name="services" ref="services"></property>
+	</bean>
+	<wss:binding url="/ConsultazioneUtenzaService">
+		<wss:service>
+			<ws:service bean="#consultazioneUtenzaService"/>
+		</wss:service>
+	</wss:binding>
+
+</beans>
